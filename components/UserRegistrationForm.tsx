@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "./ui/progress";
 import { PasswordStrengthVisualizer } from "./ui/passwordstrengthvisualizer";
+import { useUser } from "@/contexts/userContext";
 interface Address {
   address_line_1: string;
   address_line_2?: string;
@@ -28,7 +29,11 @@ interface UserRegistration {
 
 function SignupForm() {
   const { toast } = useToast();
-
+  const userContext = useUser();
+  if (!userContext) {
+    throw new Error("User context is not available");
+  }
+  const { setUserId } = userContext;
   const [formData, setFormData] = useState<UserRegistration>({
     first_name: "",
     last_name: "",
@@ -54,31 +59,6 @@ function SignupForm() {
     setFormData({ ...formData, password: newPassword });
     setPasswordStrength(calculatePasswordStrength(newPassword));
   };
-  // const [emailOTP, setEmailOTP] = useState("");
-  // const [phoneOTP, setPhoneOTP] = useState("");
-  // const handleAddressChange = async (
-  //   index: number,
-  //   field: keyof Address,
-  //   value: string
-  // ) => {
-  //   const newAddresses = [...formData.addresses];
-  //   newAddresses[index] = { ...newAddresses[index], [field]: value };
-
-  //   if (field === "pincode" && value.length === 6) {
-  //     try {
-  //       const response = await fetch(`/api/pincode-lookup?pincode=${value}`);
-  //       const data = await response.json();
-  //       if (data.city && data.state) {
-  //         newAddresses[index].city = data.city;
-  //         newAddresses[index].state = data.state;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching pincode data:", error);
-  //     }
-  //   }
-
-  //   setFormData({ ...formData, addresses: newAddresses });
-  // };
   const handleAddressChange = async (
     index: number,
     field: keyof Address,
@@ -114,8 +94,6 @@ function SignupForm() {
         }
       } catch (error) {
         console.error("Error fetching pincode data:", error);
-        // Optionally, you can set an error state here to display to the user
-        // setError(`Error fetching pincode data: ${error.message}`);
       }
     }
 
@@ -138,79 +116,6 @@ function SignupForm() {
     });
   };
 
-  // const sendEmailOTP = async () => {
-  //   try {
-  //     const response = await fetch("/api/send-email-otp", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ email: formData.email }),
-  //     });
-  //     if (response.ok) {
-  //       alert("Email OTP sent successfully");
-  //     } else {
-  //       alert("Failed to send Email OTP");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error sending Email OTP:", error);
-  //     alert("An error occurred while sending Email OTP");
-  //   }
-  // };
-  // const sendPhoneOTP = async () => {
-  //   try {
-  //     const response = await fetch("/api/send-phone-otp", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ phone_number: formData.phone_number }),
-  //     });
-  //     if (response.ok) {
-  //       alert("Phone OTP sent successfully");
-  //     } else {
-  //       alert("Failed to send Phone OTP");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error sending Phone OTP:", error);
-  //     alert("An error occurred while sending Phone OTP");
-  //   }
-  // };
-  // const verifyEmailOTP = async () => {
-  //   try {
-  //     const response = await fetch("/api/verify-email-otp", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ email: formData.email, otp: emailOTP }),
-  //     });
-  //     if (response.ok) {
-  //       setFormData({ ...formData, emailVerified: true });
-  //       alert("Email verified successfully");
-  //     } else {
-  //       alert("Invalid Email OTP");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error verifying Email OTP:", error);
-  //     alert("An error occurred while verifying Email OTP");
-  //   }
-  // };
-  // const verifyPhoneOTP = async () => {
-  //   try {
-  //     const response = await fetch("/api/verify-phone-otp", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         phone_number: formData.phone_number,
-  //         otp: phoneOTP,
-  //       }),
-  //     });
-  //     if (response.ok) {
-  //       setFormData({ ...formData, phoneVerified: true });
-  //       alert("Phone number verified successfully");
-  //     } else {
-  //       alert("Invalid Phone OTP");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error verifying Phone OTP:", error);
-  //     alert("An error occurred while verifying Phone OTP");
-  //   }
-  // };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -222,10 +127,6 @@ function SignupForm() {
       });
       return;
     }
-    // if (!formData.emailVerified || !formData.phoneVerified) {
-    //   alert("Please verify both email and phone number before submitting");
-    //   return;
-    // }
 
     try {
       const response = await fetch(`http://localhost:3000/user`, {
@@ -240,22 +141,34 @@ function SignupForm() {
           addresses: formData.addresses,
         }),
       });
+      const responseText = await response.text(); // Get the raw response text
 
-      //   const data = await response.json();
-
-      //   if (data.success) {
-      //     alert("Signup successful!");
-      //     // Redirect to login page or dashboard
-      //   } else {
-      //     alert(data.message);
-      //   }
-      // } catch (error) {
-      //   console.error("Error during signup:", error);
-      //   alert("An error occurred during signup. Please try again.");
-      // }
       if (response.ok) {
+        // const data = JSON.parse(responseText); // Parse the JSON response
+        // console.log("Response data:", data);
+
+        // // Fetch the new user ID
+        // const userIdResponse = await fetch(
+        //   `http://localhost:3000/user/${data.user_id}`
+        // );
+        // if (userIdResponse.ok) {
+        //   const userIdData = await userIdResponse.json();
+        //   const userId = userIdData.user_id; // Store the user ID for future reference
+        //   console.log("New User ID:", userId);
+        // }
         const data = await response.json();
-        console.log("Response data:", data);
+        const userId = data.user_id; // Assuming this is how you get the user ID
+        setUserId(userId);
+
+        const addressIdResponse = await fetch(
+          `http://localhost:3000/address?${userId}`
+        );
+        if (addressIdResponse.ok) {
+          const addressIdData = await addressIdResponse.json();
+          const addressId = addressIdData.address_id;
+          console.log("New User ID:", addressId);
+        }
+
         toast({
           title: "Success",
           description: "Signup successful!",
@@ -263,10 +176,11 @@ function SignupForm() {
         });
         window.location.href = "http://localhost:3001"; // Redirect to the specified URL
       } else {
-        const errorData = await response.json();
+        console.error("Signup error:", responseText); // Log the raw error response
+        const errorData = JSON.parse(responseText); // Attempt to parse the error response
         toast({
           title: "Error",
-          description: errorData.message,
+          description: errorData.message || "An error occurred during signup.",
           variant: "destructive",
         });
       }
@@ -371,31 +285,6 @@ function SignupForm() {
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <br />
-          {/* <Button
-            type="button"
-            onClick={sendEmailOTP}
-            disabled={formData.emailVerified}
-          >
-            Send Email OTP
-          </Button> */}
-          {/* </div>
-        <div>
-        <Label htmlFor="emailOTP">Email OTP</Label>
-          <Input
-            type="text"
-            id="emailOTP"
-            value={emailOTP}
-            onChange={(e) => setEmailOTP(e.target.value)}
-            disabled={formData.emailVerified}
-          />
-          <br /> */}
-          {/* <Button
-            type="button"
-            onClick={verifyEmailOTP}
-            disabled={formData.emailVerified}
-          >
-          Verify Email
-          </Button> */}
         </div>
         <div>
           <Label
@@ -415,31 +304,6 @@ function SignupForm() {
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <br />
-          {/* <Button
-            type="button"
-            onClick={sendPhoneOTP}
-            disabled={formData.phoneVerified}
-          >
-            Send Phone OTP
-          </Button> */}
-          {/* </div>
-        <div>
-        <Label htmlFor="phoneOTP">Phone OTP</Label>
-        <Input
-        type="text"
-            id="phoneOTP"
-            value={phoneOTP}
-            onChange={(e) => setPhoneOTP(e.target.value)}
-            disabled={formData.phoneVerified}
-          />
-          <br /> */}
-          {/* <Button
-            type="button"
-            onClick={verifyPhoneOTP}
-            disabled={formData.phoneVerified}
-          >
-            Verify Phone
-          </Button> */}
           <Progress value={calculateCompletionPercentage()} />{" "}
         </div>
         {formData.addresses.map((address, index) => (

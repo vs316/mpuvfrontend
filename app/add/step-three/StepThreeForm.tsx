@@ -5,6 +5,7 @@ import SubmitButton from "../../../components/SubmitButton";
 import { stepThreeFormAction } from "./actions";
 import { FormErrors } from "@/types";
 import { useFormState } from "react-dom";
+import { NewDealInitialValuesType } from "@/types"; // Add this import
 //import Select from "@/components/Select"; // Assuming Select component for dropdown
 
 const initialState: FormErrors = {};
@@ -29,7 +30,11 @@ export default function StepThreeForm() {
   };
 
   // Function to update a package's details
-  const updatePackage = (index: number, field: string, value: string) => {
+  const updatePackage = (
+    index: number,
+    field: "weight" | "description" | "instructions",
+    value: string
+  ) => {
     const newPackages = [...packages];
     newPackages[index][field] = value;
     setPackages(newPackages);
@@ -90,7 +95,11 @@ export default function StepThreeForm() {
           label="Value of Goods"
           id="valueOfGoods"
           type="number"
-          errorMsg={serverErrors?.valueOfGoods}
+          errorMsg={
+            serverErrors?.valueOfGoods !== undefined
+              ? String(serverErrors.valueOfGoods)
+              : undefined
+          }
         />
 
         {/* Render each package */}
@@ -101,37 +110,49 @@ export default function StepThreeForm() {
             {/* Weight */}
             <Input
               label="Weight (in Kgs)"
-              id={`weight-${index}`}
+              id={`weight-${index}` as keyof NewDealInitialValuesType} // Update this line
               type="number"
               value={pkg.weight}
               onChange={(e) => updatePackage(index, "weight", e.target.value)}
               required
-              errorMsg={serverErrors?.[`weight-${index}`]}
+              errorMsg={
+                serverErrors?.[`weight-${index}`] !== undefined
+                  ? String(serverErrors[`weight-${index}`])
+                  : undefined
+              }
             />
 
             {/* Package Description */}
             <Input
               label="Package Description"
-              id={`description-${index}`}
+              id={`description-${index}` as keyof NewDealInitialValuesType} // Update this line
               type="text"
               value={pkg.description}
               onChange={(e) =>
                 updatePackage(index, "description", e.target.value)
               }
               required
-              errorMsg={serverErrors?.[`description-${index}`]}
+              errorMsg={
+                serverErrors?.[`description-${index}`] !== undefined
+                  ? String(serverErrors[`description-${index}`])
+                  : undefined
+              }
             />
 
             {/* Package Instructions */}
             <Input
               label="Package Instructions"
-              id={`instructions-${index}`}
+              id={`instructions-${index}` as keyof NewDealInitialValuesType} // Update this line
               type="text"
               value={pkg.instructions}
               onChange={(e) =>
                 updatePackage(index, "instructions", e.target.value)
               }
-              errorMsg={serverErrors?.[`instructions-${index}`]}
+              errorMsg={
+                serverErrors?.[`instructions-${index}`] !== undefined
+                  ? String(serverErrors[`instructions-${index}`])
+                  : undefined
+              }
             />
           </div>
         ))}
@@ -173,7 +194,7 @@ export default function StepThreeForm() {
         </div>
 
         {/* Submit Button */}
-        <SubmitButton text="Continue" />
+        <SubmitButton text="Continue" submittingText="Processing..." />
       </div>
     </form>
   );

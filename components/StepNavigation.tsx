@@ -10,17 +10,17 @@ import { AddRoutes } from "@/types";
 
 const steps = [
   {
-    title: "Step One",
+    title: "Ship From",
     route: "step-one",
     link: AddRoutes.SHIPFROM_INFO,
   },
   {
-    title: "Step Two",
+    title: "Ship To",
     route: "step-two",
     link: AddRoutes.SHIPTO_INFO,
   },
   {
-    title: "Step Three",
+    title: "Package Details",
     route: "step-three",
     link: AddRoutes.SHIPMENTPACKAGE_INFO,
   },

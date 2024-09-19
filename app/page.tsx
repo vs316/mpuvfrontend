@@ -32,7 +32,7 @@ export default function Home() {
             <div className="bg-card text-card-foreground p-6 rounded-lg shadow-md space-y-4">
               <h3 className="text-xl font-semibold">Create Shipment</h3>
               <p>Registered users can create new shipments here.</p>
-              <Link href="add/step-one" passHref>
+              <Link href="add/step-one" target="_blank" passHref>
                 <Button className="w-full">
                   <Package className="mr-2 h-4 w-4" /> Create Shipment
                 </Button>

@@ -3,6 +3,7 @@ import { useFormStatus } from "react-dom";
 
 interface SubmitButtonProps {
   text: string;
+  submittingText: string;
 }
 export default function SubmitButton({ text }: SubmitButtonProps) {
   const { pending } = useFormStatus();

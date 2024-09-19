@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Input from "@/components/Input";
 import SubmitButton from "@/components/SubmitButton";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 export default function CreateShipmentForm() {
-  const router = useRouter();
+  // const router = useRouter();
   const [shipmentData, setShipmentData] = useState({
     shipmentType: "Forward",
     packageType: "Package",
@@ -38,10 +38,10 @@ export default function CreateShipmentForm() {
   });
 
   const [selectedService, setSelectedService] = useState("");
-  const [promoCode, setPromoCode] = useState("");
+  // const [promoCode, setPromoCode] = useState("");
   const [agreeToPolicy, setAgreeToPolicy] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Add your submission logic here
     toast.success("Shipment created successfully");
@@ -103,7 +103,8 @@ export default function CreateShipmentForm() {
       <div>
         <label htmlFor="shipmentDate">Shipment Date</label>
         <Input
-          id="shipmentDate"
+          label="shipment date"
+          id="valueOfGoods"
           type="date"
           value={shipmentData.shipmentDate}
           onChange={(e) =>

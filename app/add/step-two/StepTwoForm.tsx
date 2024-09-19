@@ -140,7 +140,7 @@ export default function StepTwoForm() {
         </div>
 
         {/* Submit Button */}
-        <SubmitButton text="Continue" />
+        <SubmitButton text="Continue" submittingText="Processing..." />
       </div>
     </form>
   );

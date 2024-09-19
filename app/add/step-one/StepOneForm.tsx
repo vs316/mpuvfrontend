@@ -5,11 +5,17 @@ import { stepOneFormAction } from "./actions";
 import { FormErrors } from "@/types";
 import SubmitButton from "@/components/SubmitButton";
 import { useEffect, useState } from "react";
-import { fetchUserDetails } from "@/services/fetchUserDetails"; // Import your fetch function
-
+import { getUser } from "@/services/api"; // Import the getUser function
+import { useUser } from "@/contexts/userContext";
 const initialState: FormErrors = {};
+// TODO: 1. based on User_id, in step one, for (ship to) , user details to be fetched and auto-filled into the relevant fields.
+// TODO: 2. User default addresses to be fetched and displayed as a drop-down in the address fields in step-one form.Do this by doing a GET request to http://localhost:3000/address/${addressID}
+// TODO: 3. If user enters a new ship from address and checks the update address to address book checkbox, post the new address details to the address table for that user.
 
 export default function StepOneForm() {
+  const userContext = useUser();
+  const userId = userContext?.userId; // Use optional chaining
+
   const [serverErrors, formAction] = useFormState(
     stepOneFormAction,
     initialState
@@ -21,44 +27,34 @@ export default function StepOneForm() {
     lastName: "",
     email: "",
     phoneNumber: "",
-    addressLine1: "",
-    addressLine2: "",
-    locality: "",
-    pincode: "",
-    city: "",
-    password: "", // Include password if necessary
   });
 
   // Fetch user details on component mount
   useEffect(() => {
     const fetchData = async () => {
-      const userId = "USER_ID"; // Get user ID from session or context
-      const user = await fetchUserDetails(userId);
-
-      if (user) {
-        setUserData({
-          firstName: user.firstName || "",
-          lastName: user.lastName || "",
-          email: user.email || "",
-          phoneNumber: user.phoneNumber || "",
-          addressLine1: user.addressLine1 || "",
-          addressLine2: user.addressLine2 || "",
-          locality: user.locality || "",
-          pincode: user.pincode || "",
-          city: user.city || "",
-          password: user.password || "", // If needed
-        });
+      try {
+        if (userId) {
+          const user = await getUser(userId); // Fetch user data from the backend
+          setUserData({
+            firstName: user.first_name || "", // Adjust according to your API response
+            lastName: user.last_name || "",
+            email: user.email || "",
+            phoneNumber: user.phone_number || "",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [userId]);
 
   return (
     <form action={formAction} className="flex flex-1 flex-col items-center">
       <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
         {/* Type (Forward, Return, Both) */}
-        <div className="flex gap-4">
+        {/* <div className="flex gap-4">
           <label className="flex items-center">
             <input type="radio" name="type" value="forward" required /> Forward
           </label>
@@ -68,7 +64,7 @@ export default function StepOneForm() {
           <label className="flex items-center">
             <input type="radio" name="type" value="both" /> Both
           </label>
-        </div>
+        </div> */}
 
         {/* First Name */}
         <Input
@@ -192,7 +188,7 @@ export default function StepOneForm() {
         </div>
 
         {/* Submit Button */}
-        <SubmitButton text="Continue" />
+        <SubmitButton text="Continue" submittingText="Processing..." />
       </div>
     </form>
   );

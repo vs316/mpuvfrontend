@@ -1,9 +1,8 @@
-const API_BASE_URL = "http://localhost:3000";
 // API utility functions for making HTTP requests
 
-export async function getUser(userId: string) {
+export async function getUser(userId: number) {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`); // Assuming you have an API route at /api/users/[id]
+    const response = await fetch(`http://localhost:3000/user/${userId}`); // Assuming you have an API route at /api/users/[id]
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }

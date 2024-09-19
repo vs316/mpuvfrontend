@@ -18,12 +18,20 @@ interface InputProps {
 }
 
 interface NewDealData {
-  name?: string;
-  link?: string;
-  coupon?: string;
-  discount?: number;
-  contactName?: string;
-  contactEmail?: string;
+  firstName?: string; // Add this line
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  locality?: string;
+  pincode?: string;
+  city?: string;
+  company?: string;
+  descriptionOfGoods?: string;
+  valueOfGoods?: number;
+  weight?: number;
+  instructions?: string;
 }
 
 export default function Input({
@@ -76,6 +84,6 @@ export default function Input({
     </div>
   );
 }
-function setUpdatedDeal(arg0: (prev: any) => any) {
-  throw new Error("Function not implemented.");
-}
+// function setUpdatedDeal(arg0: (prev: any) => any) {
+//   throw new Error("Function not implemented.");
+// }

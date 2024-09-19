@@ -11,24 +11,43 @@ export interface StepOneErrors {
 }
 
 export interface StepTwoErrors {
-  coupon?: string;
-  discount?: string;
+  company: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  locality?: string;
+  pincode?: string;
+  city?: string;
 }
 
 export interface StepThreeErrors {
-  contactName?: string;
-  contactEmail?: string;
-  invoiceNumber?: string;
-  referenceNumber1?: string;
-  referenceNumber2?: string;
   descriptionOfGoods?: string;
-  valueOfGoods?: string;
-  weight?: string;
+  valueOfGoods?: number;
+  weight?: number;
   description?: string;
   instructions?: string;
 }
 
-export type FormErrors = StepOneErrors & StepTwoErrors & StepThreeErrors;
+export interface FormErrors {
+  [key: string]: string | number | undefined; // Add this line
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  locality?: string;
+  pincode?: string;
+  city?: string;
+  company?: string;
+  descriptionOfGoods?: string;
+  valueOfGoods?: number;
+  weight?: number;
+  instructions?: string;
+}
 
 export enum AddRoutes {
   SHIPFROM_INFO = "/add/step-one",
