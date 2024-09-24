@@ -5,6 +5,7 @@ import { Package, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { RegistrationModal } from "@/components/RegistrationModal";
 import { Toaster } from "@/components/ui/toaster";
+import { UserProvider } from "@/contexts/userContext";
 export default function Home() {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
@@ -41,10 +42,12 @@ export default function Home() {
           </section>
         </div>
       </main>
-      <RegistrationModal
-        isOpen={isRegistrationOpen}
-        onClose={() => setIsRegistrationOpen(false)}
-      />
+      <UserProvider>
+        <RegistrationModal
+          isOpen={isRegistrationOpen}
+          onClose={() => setIsRegistrationOpen(false)}
+        />
+      </UserProvider>
       <Toaster />
     </div>
   );

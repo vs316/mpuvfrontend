@@ -7,13 +7,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Progress } from "./ui/progress";
 import { PasswordStrengthVisualizer } from "./ui/passwordstrengthvisualizer";
 import { useUser } from "@/contexts/userContext";
+//import { useRouter } from "next/router";
 interface Address {
+  address_id?: number;
   address_line_1: string;
   address_line_2?: string;
   locality?: string;
   city: string;
   state: string;
   pincode: string;
+  userId?: number;
 }
 
 interface UserRegistration {
@@ -46,6 +49,7 @@ function SignupForm() {
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
+  // const [loading, setLoading] = useState(false);
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
     if (password.length >= 8) strength += 25; // Length
@@ -69,34 +73,34 @@ function SignupForm() {
 
     if (field === "pincode" && value.length === 6) {
       try {
-        const response = await fetch(`/api/pincode-lookup?pincode=${value}`);
+        const response = await fetch(
+          `https://api.postalpincode.in/pincode/${value}`
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        const responseText = await response.text();
-        console.log("Raw API response:", responseText);
-
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error("JSON parse error:", parseError);
-          throw new Error("Invalid JSON response from API");
-        }
-
-        if (data.city && data.state) {
-          newAddresses[index].city = data.city;
-          newAddresses[index].state = data.state;
+        const data = await response.json(); // Directly parse JSON response
+        // Check for valid response structure
+        if (
+          Array.isArray(data) &&
+          data[0]?.Status === "Success" &&
+          Array.isArray(data[0]?.PostOffice) &&
+          data[0].PostOffice.length > 0
+        ) {
+          const postOffice = data[0].PostOffice[0];
+          // Update city and state in the address
+          newAddresses[index].city = postOffice.Name;
+          newAddresses[index].state = postOffice.State;
         } else {
-          console.warn("City or state data missing in API response");
+          console.warn("Pincode not found or invalid data structure");
         }
       } catch (error) {
         console.error("Error fetching pincode data:", error);
       }
     }
 
+    // Update the form data state with the new address
     setFormData({ ...formData, addresses: newAddresses });
   };
   const addAddress = () => {
@@ -116,7 +120,7 @@ function SignupForm() {
     });
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (formData.password !== confirmPassword) {
@@ -127,7 +131,7 @@ function SignupForm() {
       });
       return;
     }
-
+    //setLoading(true);
     try {
       const response = await fetch(`http://localhost:3000/user`, {
         method: "POST",
@@ -141,9 +145,14 @@ function SignupForm() {
           addresses: formData.addresses,
         }),
       });
-      const responseText = await response.text(); // Get the raw response text
+      //  const responseText = await response.text(); // Get the raw response text
 
       if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Signup successful!",
+          variant: "default",
+        });
         // const data = JSON.parse(responseText); // Parse the JSON response
         // console.log("Response data:", data);
 
@@ -158,26 +167,38 @@ function SignupForm() {
         // }
         const data = await response.json();
         const userId = data.user_id; // Assuming this is how you get the user ID
+        console.log(userId);
         setUserId(userId);
 
         const addressIdResponse = await fetch(
-          `http://localhost:3000/address?${userId}`
+          `http://localhost:3000/address?userId=${userId}`
         );
         if (addressIdResponse.ok) {
-          const addressIdData = await addressIdResponse.json();
-          const addressId = addressIdData.address_id;
-          console.log("New User ID:", addressId);
+          const addressIdData: {
+            status: string;
+            message: string;
+            result: Address[];
+          } = await addressIdResponse.json();
+          const filteredAddresses = addressIdData.result.filter(
+            (address) => address.userId === userId
+          );
+          // const addressId = filteredAddresses.address_id;
+          // console.log("New address ID:", addressId);
+          if (filteredAddresses.length > 0) {
+            const addressId = filteredAddresses[0].address_id; // Get the address_id of the first matching address
+            console.log("New address ID:", addressId);
+          } else {
+            console.log("No addresses found for this user ID.");
+          }
+        } else {
+          console.error(
+            "Failed to fetch addresses:",
+            addressIdResponse.statusText
+          );
         }
-
-        toast({
-          title: "Success",
-          description: "Signup successful!",
-          variant: "default",
-        });
-        window.location.href = "http://localhost:3001"; // Redirect to the specified URL
       } else {
-        console.error("Signup error:", responseText); // Log the raw error response
-        const errorData = JSON.parse(responseText); // Attempt to parse the error response
+        const errorData = await response.json();
+        console.error("Signup error:", errorData); // Log the raw error response // Attempt to parse the error response
         toast({
           title: "Error",
           description: errorData.message || "An error occurred during signup.",
@@ -192,6 +213,9 @@ function SignupForm() {
         variant: "destructive",
       });
     }
+    // finally {
+    //   setLoading(false);
+    // }
   };
   const calculateCompletionPercentage = () => {
     const totalFields = 6 + formData.addresses.length * 5; // 6 fields + 5 fields per address
@@ -381,7 +405,7 @@ function SignupForm() {
                   Pincode
                 </Label>
                 <Input
-                  type="text"
+                  type="number"
                   id={`pincode-${index}`}
                   value={address.pincode}
                   onChange={(e) =>

@@ -5,7 +5,7 @@ import { stepOneFormAction } from "./actions";
 import { FormErrors } from "@/types";
 import SubmitButton from "@/components/SubmitButton";
 import { useEffect, useState } from "react";
-import { getUser } from "@/services/api"; // Import the getUser function
+import { getUser, postNewAddress, getUserAddresses } from "@/services/api";
 import { useUser } from "@/contexts/userContext";
 const initialState: FormErrors = {};
 // TODO: 1. based on User_id, in step one, for (ship to) , user details to be fetched and auto-filled into the relevant fields.
@@ -28,19 +28,48 @@ export default function StepOneForm() {
     email: "",
     phoneNumber: "",
   });
+  interface Address {
+    address_id: number; // Add this line
+    addressLine1: string;
+    addressLine2?: string;
+    locality?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  }
+  // State to hold user's addresses
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [newAddress, setNewAddress] = useState({
+    addressLine1: "",
+    addressLine2: "",
+    locality: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
+  const [saveAddress, setSaveAddress] = useState(false); // Checkbox state
 
   // Fetch user details on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (userId) {
-          const user = await getUser(userId); // Fetch user data from the backend
+        if (userId != null) {
+          console.log("Fetching user data for userId:", userId);
+          const user = await getUser(userId);
+          // Fetch user data from the backend
+          console.log("User data fetched:", user);
           setUserData({
             firstName: user.first_name || "", // Adjust according to your API response
             lastName: user.last_name || "",
             email: user.email || "",
             phoneNumber: user.phone_number || "",
           });
+          const userAddresses = await getUserAddresses(userId); // Fetch user addresses
+          console.log("User addresses fetched:", userAddresses);
+          setAddresses(userAddresses); // Set the address dropdown
+        } else {
+          console.log("User ID is null or undefined."); // Debug if userId is missing
         }
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -50,8 +79,33 @@ export default function StepOneForm() {
     fetchData();
   }, [userId]);
 
+  // Handle address selection from dropdown
+  const handleAddressSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = addresses.find(
+      (address) => address.address_id === parseInt(event.target.value)
+    );
+    if (selected) {
+      setSelectedAddress(selected);
+    }
+  };
+
+  // Handle new address submission
+  const handleSubmitNewAddress = async () => {
+    if (saveAddress && userId != null) {
+      try {
+        await postNewAddress(userId, newAddress);
+        alert("New address saved!");
+      } catch (error) {
+        console.error("Error saving new address:", error);
+      }
+    }
+  };
   return (
-    <form action={formAction} className="flex flex-1 flex-col items-center">
+    <form
+      action={formAction}
+      className="flex flex-1 flex-col items-center"
+      onSubmit={handleSubmitNewAddress}
+    >
       <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
         {/* Type (Forward, Return, Both) */}
         {/* <div className="flex gap-4">
@@ -116,74 +170,107 @@ export default function StepOneForm() {
           }
           errorMsg={serverErrors?.phoneNumber}
         />
-
+        {/* Address Dropdown */}
+        <div className="flex flex-col">
+          <label htmlFor="addressSelect">Select Address</label>
+          <select
+            id="addressSelect"
+            value={selectedAddress?.address_id || ""}
+            onChange={handleAddressSelect}
+          >
+            <option value="">Select Address</option>
+            {addresses.length > 0 ? (
+              addresses.map((address) => (
+                <option key={address.address_id} value={address.address_id}>
+                  {address.addressLine1}, {address.city}, {address.pincode}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No addresses found.
+              </option>
+            )}
+          </select>
+        </div>
         {/* Address Line 1 */}
-        <Input
-          label="Address Line 1"
-          id="addressLine1"
-          type="text"
-          required
-          value={userData.addressLine1}
-          onChange={(e) =>
-            setUserData({ ...userData, addressLine1: e.target.value })
-          }
-          errorMsg={serverErrors?.addressLine1}
-        />
+        {selectedAddress === null && (
+          <>
+            <Input
+              label="Address Line 1"
+              id="addressLine1"
+              type="text"
+              required
+              value={newAddress.addressLine1}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, addressLine1: e.target.value })
+              }
+              errorMsg={serverErrors?.addressLine1}
+            />
 
-        {/* Address Line 2 */}
-        <Input
-          label="Address Line 2"
-          id="addressLine2"
-          type="text"
-          required
-          value={userData.addressLine2}
-          onChange={(e) =>
-            setUserData({ ...userData, addressLine2: e.target.value })
-          }
-          errorMsg={serverErrors?.addressLine2}
-        />
+            {/* Address Line 2 */}
+            <Input
+              label="Address Line 2"
+              id="addressLine2"
+              type="text"
+              required
+              value={newAddress.addressLine2}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, addressLine2: e.target.value })
+              }
+              errorMsg={serverErrors?.addressLine2}
+            />
 
-        {/* Locality */}
-        <Input
-          label="Locality"
-          id="locality"
-          type="text"
-          required
-          value={userData.locality}
-          onChange={(e) =>
-            setUserData({ ...userData, locality: e.target.value })
-          }
-          errorMsg={serverErrors?.locality}
-        />
+            {/* Locality */}
+            <Input
+              label="Locality"
+              id="locality"
+              type="text"
+              required
+              value={newAddress.locality}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, locality: e.target.value })
+              }
+              errorMsg={serverErrors?.locality}
+            />
 
-        {/* Pincode */}
-        <Input
-          label="Pincode"
-          id="pincode"
-          type="text"
-          required
-          pattern="[0-9]{6}" // Assuming 6-digit pincode
-          value={userData.pincode}
-          onChange={(e) =>
-            setUserData({ ...userData, pincode: e.target.value })
-          }
-          errorMsg={serverErrors?.pincode}
-        />
+            {/* Pincode */}
+            <Input
+              label="Pincode"
+              id="pincode"
+              type="text"
+              required
+              pattern="[0-9]{6}" // Assuming 6-digit pincode
+              value={newAddress.pincode}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, pincode: e.target.value })
+              }
+              errorMsg={serverErrors?.pincode}
+            />
 
-        {/* City */}
-        <Input
-          label="City"
-          id="city"
-          type="text"
-          required
-          value={userData.city}
-          onChange={(e) => setUserData({ ...userData, city: e.target.value })}
-          errorMsg={serverErrors?.city}
-        />
+            {/* City */}
+            <Input
+              label="City"
+              id="city"
+              type="text"
+              required
+              value={newAddress.city}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, city: e.target.value })
+              }
+              errorMsg={serverErrors?.city}
+            />
+          </>
+        )}
 
-        {/* Checkbox to Update Address */}
+        {/* Checkbox to Save New Address */}
+
         <div className="flex items-center gap-2">
-          <input type="checkbox" id="updateAddress" />
+          <input
+            type="checkbox"
+            id="updateAddress"
+            checked={saveAddress}
+            onChange={(e) => setSaveAddress(e.target.checked)}
+          />
           <label htmlFor="updateAddress">Update address to address book</label>
         </div>
 
