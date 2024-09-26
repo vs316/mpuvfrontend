@@ -52,6 +52,90 @@ export default function CreateShipmentForm() {
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Step 1: Retrieve data from localStorage
+    const localData = JSON.parse(
+      localStorage.getItem("multi-page-form-demo-newDealData") || "{}"
+    );
+    const storedService = localStorage.getItem("selectedService");
+    // Step 2: Prepare the data for each API request
+
+    // Ship From data
+    const shipFromData = {
+      first_name: localData.firstName,
+      last_name: localData.lastName,
+      email: localData.email,
+      phone_number: localData.phoneNumber,
+      pincode: localData.pincode,
+      city: localData.city,
+      locality: localData.locality,
+      address_line_2: localData.addressLine2,
+      address_line_1: localData.addressLine1,
+    };
+
+    // Ship To data
+    const shipToData = {
+      company: localData.shiptocompany,
+      first_name: localData.shiptofirstName,
+      last_name: localData.shiptolastName,
+      email: localData.shiptoemail,
+      phone_number: localData.shiptophoneNumber,
+      pincode: localData.shiptopincode,
+      city: localData.shiptocity,
+      locality: localData.shiptolocality,
+      address_line_2: localData.shiptoaddressLine2,
+      address_line_1: localData.shiptoaddressLine1,
+    };
+
+    // Shipment Item (Package) data
+    const shipmentItemData = {
+      item_description: localData.packages[0]?.description || null,
+      weight: parseFloat(localData.packages[0]?.weight) || null,
+      value: parseFloat(localData.packages[0]?.valueofgoods) || null,
+      descriptionOfGoods: localData.descriptionOfGoods || null,
+      servicetype: storedService,
+    };
+
+    // Step 3: Send the API requests asynchronously
+    try {
+      const [shipFromResponse, shipToResponse, shipmentItemResponse] =
+        await Promise.all([
+          fetch("http://localhost:3000/shipfrom", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(shipFromData),
+          }),
+          fetch("http://localhost:3000/shipto", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(shipToData),
+          }),
+          fetch("http://localhost:3000/shipment-items", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(shipmentItemData),
+          }),
+        ]);
+
+      // Check for successful responses
+      if (shipFromResponse.ok && shipToResponse.ok && shipmentItemResponse.ok) {
+        console.log("All API requests succeeded");
+
+        // Step 4: Proceed to the payment gateway
+        window.location.href = "/"; // Redirect to payment gateway page
+      } else {
+        console.error("Error occurred in one or more API requests");
+      }
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+
     const res = await submitDealAction(newDealData as NewDealType);
     const { errorMsg, success } = res;
 
@@ -164,9 +248,7 @@ export default function CreateShipmentForm() {
             }`}
             onClick={() => handleServiceSelection("express")}
           >
-            Express End of Day
-            <p>Shipment Date: 03 Sep, 2024</p>
-            <p>Delivery Date & Time: 04 Sep, 2024 11:30 PM</p>
+            Express [End of Day]
           </button>
           <button
             type="button"
@@ -175,9 +257,7 @@ export default function CreateShipmentForm() {
             }`}
             onClick={() => handleServiceSelection("standard")}
           >
-            Standard Premium
-            <p>Shipment Date: 03 Sep, 2024</p>
-            <p>Delivery Date & Time: 04 Sep, 2024 11:30 PM</p>
+            Standard Premium [3-6 business days]
           </button>
         </div>
       </div>

@@ -56,6 +56,12 @@ export default function StepThreeForm() {
     //updatedPackages[index][field] = value;
     setPackages(updatedPackages);
   };
+  // Function to remove a package
+  const removePackage = (index: number) => {
+    const updatedPackages = packages.filter((_, i) => i !== index);
+    setPackages(updatedPackages);
+  };
+
   // Store the updated package array in localStorage dynamically
   //   const allData = JSON.parse(
   //     localStorage.getItem("multi-page-form-demo-newDealData") || "{}"
@@ -160,6 +166,14 @@ export default function StepThreeForm() {
                   : undefined
               }
             />
+            {/* Button to remove this package */}
+            <button
+              type="button"
+              className="mt-2 text-red-500"
+              onClick={() => removePackage(index)}
+            >
+              Remove Package
+            </button>
           </div>
         ))}
 

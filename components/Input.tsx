@@ -67,15 +67,15 @@ export default function Input({
       <label className="block text-lg" htmlFor={id}>
         {label}
         {description && (
-          <span className="text-sm text-slate-600 block mb-1">
+          <span className="text-sm text-slate-600 dark:text-slate-400 block mb-1">
             {description}
           </span>
         )}
       </label>
       <input
-        className={`w-full rounded-md py-4 px-2 text-slate-700 ${
-          errorMsg ? "border-red-500" : "border-slate-300"
-        } border-2`}
+        className={`w-full rounded-md py-4 px-2 text-slate-700 dark:text-foreground
+          bg-white dark:bg-input border-slate-300 dark:border-secondary-foreground
+          ${errorMsg ? "border-red-500" : "border-slate-300"} border-2`}
         type={type}
         name={id}
         id={id}
