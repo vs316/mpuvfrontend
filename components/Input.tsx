@@ -27,11 +27,22 @@ interface NewDealData {
   locality?: string;
   pincode?: string;
   city?: string;
-  company?: string;
+  shiptocompany?: string;
+  shiptofirstName?: string; // Add this line
+  shiptolastName?: string;
+  shiptoemail?: string;
+  shiptophoneNumber?: string;
+  shiptoaddressLine1?: string;
+  shiptoaddressLine2?: string;
+  shiptolocality?: string;
+  shiptopincode?: string;
+  shiptocity?: string;
   descriptionOfGoods?: string;
-  valueOfGoods?: number;
-  weight?: number;
-  instructions?: string;
+  packages?: Array<{
+    weight?: number;
+    description?: string;
+    instructions?: string;
+  }>;
 }
 
 export default function Input({
@@ -50,19 +61,19 @@ export default function Input({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateNewDealDetails({ [e.target.name]: e.target.value });
   };
-
+  const inputValue = newDealData[id];
   return (
     <div>
       <label className="block text-lg" htmlFor={id}>
         {label}
         {description && (
-          <span className="text-sm text-slate-200 block mb-1">
+          <span className="text-sm text-slate-600 block mb-1">
             {description}
           </span>
         )}
       </label>
       <input
-        className={`w-full rounded-md py-4 px-2 text-slate-400 ${
+        className={`w-full rounded-md py-4 px-2 text-slate-700 ${
           errorMsg ? "border-red-500" : "border-slate-300"
         } border-2`}
         type={type}
@@ -74,7 +85,7 @@ export default function Input({
         min={min}
         max={max}
         onChange={handleInputChange}
-        defaultValue={newDealData[id]} // Now TypeScript knows id is a valid key
+        defaultValue={typeof inputValue === "string" ? inputValue : ""} // Ensure it's a string // Now TypeScript knows id is a valid key
       />
       <div className="min-h-8 mt-1">
         {errorMsg && (

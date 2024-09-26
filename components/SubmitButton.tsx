@@ -4,6 +4,7 @@ import { useFormStatus } from "react-dom";
 interface SubmitButtonProps {
   text: string;
   submittingText: string;
+  disabled?: boolean;
 }
 export default function SubmitButton({ text }: SubmitButtonProps) {
   const { pending } = useFormStatus();

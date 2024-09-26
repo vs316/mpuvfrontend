@@ -5,41 +5,54 @@ import { stepOneFormAction } from "./actions";
 import { FormErrors } from "@/types";
 import SubmitButton from "@/components/SubmitButton";
 import { useEffect, useState } from "react";
-import { getUser, postNewAddress, getUserAddresses } from "@/services/api";
-import { useUser } from "@/contexts/userContext";
+import { getOrCreateUserId } from "@/app/utils/UserUtils";
+
 const initialState: FormErrors = {};
-// TODO: 1. based on User_id, in step one, for (ship to) , user details to be fetched and auto-filled into the relevant fields.
-// TODO: 2. User default addresses to be fetched and displayed as a drop-down in the address fields in step-one form.Do this by doing a GET request to http://localhost:3000/address/${addressID}
-// TODO: 3. If user enters a new ship from address and checks the update address to address book checkbox, post the new address details to the address table for that user.
+
+// Define Address Interface
+interface Address {
+  address_id: number;
+  addressLine1: string;
+  addressLine2?: string;
+  locality?: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
 
 export default function StepOneForm() {
-  const userContext = useUser();
-  const userId = userContext?.userId; // Use optional chaining
-
   const [serverErrors, formAction] = useFormState(
     stepOneFormAction,
     initialState
   );
 
-  // State to hold user details
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phoneNumber: "",
   });
-  interface Address {
-    address_id: number; // Add this line
-    addressLine1: string;
-    addressLine2?: string;
-    locality?: string;
-    city: string;
-    state: string;
-    pincode: string;
-  }
-  // State to hold user's addresses
-  const [addresses, setAddresses] = useState<Address[]>([]);
+
+  const [addresses] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [userId, setUserId] = useState("");
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    // const storedUserData = localStorage.getItem("userData");
+    // const storedNewAddress = localStorage.getItem("newAddress");
+    // const storedSelectedAddress = localStorage.getItem("selectedAddress");
+
+    // if (storedUserData) setUserData(JSON.parse(storedUserData));
+    // if (storedNewAddress) setNewAddress(JSON.parse(storedNewAddress));
+    // if (storedSelectedAddress)
+    //   setSelectedAddress(JSON.parse(storedSelectedAddress));
+
+    // Fetch or create a user ID using the getOrCreateUserId function
+    const userIdFromStorage = getOrCreateUserId();
+    setUserId(userIdFromStorage);
+  }, []);
+
   const [newAddress, setNewAddress] = useState({
     addressLine1: "",
     addressLine2: "",
@@ -48,36 +61,8 @@ export default function StepOneForm() {
     state: "",
     pincode: "",
   });
+
   const [saveAddress, setSaveAddress] = useState(false); // Checkbox state
-
-  // Fetch user details on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (userId != null) {
-          console.log("Fetching user data for userId:", userId);
-          const user = await getUser(userId);
-          // Fetch user data from the backend
-          console.log("User data fetched:", user);
-          setUserData({
-            firstName: user.first_name || "", // Adjust according to your API response
-            lastName: user.last_name || "",
-            email: user.email || "",
-            phoneNumber: user.phone_number || "",
-          });
-          const userAddresses = await getUserAddresses(userId); // Fetch user addresses
-          console.log("User addresses fetched:", userAddresses);
-          setAddresses(userAddresses); // Set the address dropdown
-        } else {
-          console.log("User ID is null or undefined."); // Debug if userId is missing
-        }
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-      }
-    };
-
-    fetchData();
-  }, [userId]);
 
   // Handle address selection from dropdown
   const handleAddressSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -89,36 +74,39 @@ export default function StepOneForm() {
     }
   };
 
-  // Handle new address submission
-  const handleSubmitNewAddress = async () => {
-    if (saveAddress && userId != null) {
-      try {
-        await postNewAddress(userId, newAddress);
-        alert("New address saved!");
-      } catch (error) {
-        console.error("Error saving new address:", error);
-      }
-    }
-  };
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   // alert("Form data saved locally. Proceed to the next step.");
+  //   // Perform validation here if needed
+  //   //const errors = stepOneFormAction(undefined, FormData);
+
+  //   // if (errors) {
+  //   //   // Handle errors
+  //   //   console.error(errors);
+  //   //   return; // Stop the submission if there are errors
+  //   // }
+
+  //   // router.push(AddRoutes.SHIPTO_INFO);
+  // };
+
   return (
     <form
       action={formAction}
       className="flex flex-1 flex-col items-center"
-      onSubmit={handleSubmitNewAddress}
+      //onSubmit={handleSubmit}
     >
       <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
-        {/* Type (Forward, Return, Both) */}
-        {/* <div className="flex gap-4">
-          <label className="flex items-center">
-            <input type="radio" name="type" value="forward" required /> Forward
-          </label>
-          <label className="flex items-center">
-            <input type="radio" name="type" value="return" /> Return
-          </label>
-          <label className="flex items-center">
-            <input type="radio" name="type" value="both" /> Both
-          </label>
-        </div> */}
+        {/* User ID Display */}
+        <div className="flex flex-col">
+          <label htmlFor="userId">Current User ID</label>
+          <input
+            id="userId"
+            type="text"
+            value={userId}
+            readOnly
+            className="bg-gray-100 border border-gray-300 p-2 rounded text-slate-500"
+          />
+        </div>
 
         {/* First Name */}
         <Input
@@ -126,10 +114,10 @@ export default function StepOneForm() {
           id="firstName"
           type="text"
           required
-          value={userData.firstName} // Bind the value to state
+          value={userData.firstName}
           onChange={(e) =>
             setUserData({ ...userData, firstName: e.target.value })
-          } // Update state
+          }
           errorMsg={serverErrors?.firstName}
         />
 
@@ -163,13 +151,14 @@ export default function StepOneForm() {
           id="phoneNumber"
           type="tel"
           required
-          pattern="[0-9]{10}" // Assuming 10-digit phone numbers
+          pattern="[0-9]{10}"
           value={userData.phoneNumber}
           onChange={(e) =>
             setUserData({ ...userData, phoneNumber: e.target.value })
           }
           errorMsg={serverErrors?.phoneNumber}
         />
+
         {/* Address Dropdown */}
         <div className="flex flex-col">
           <label htmlFor="addressSelect">Select Address</label>
@@ -192,7 +181,8 @@ export default function StepOneForm() {
             )}
           </select>
         </div>
-        {/* Address Line 1 */}
+
+        {/* Address Fields */}
         {selectedAddress === null && (
           <>
             <Input
@@ -207,12 +197,10 @@ export default function StepOneForm() {
               errorMsg={serverErrors?.addressLine1}
             />
 
-            {/* Address Line 2 */}
             <Input
               label="Address Line 2"
               id="addressLine2"
               type="text"
-              required
               value={newAddress.addressLine2}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, addressLine2: e.target.value })
@@ -220,12 +208,10 @@ export default function StepOneForm() {
               errorMsg={serverErrors?.addressLine2}
             />
 
-            {/* Locality */}
             <Input
               label="Locality"
               id="locality"
               type="text"
-              required
               value={newAddress.locality}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, locality: e.target.value })
@@ -233,13 +219,12 @@ export default function StepOneForm() {
               errorMsg={serverErrors?.locality}
             />
 
-            {/* Pincode */}
             <Input
               label="Pincode"
               id="pincode"
               type="text"
               required
-              pattern="[0-9]{6}" // Assuming 6-digit pincode
+              pattern="[0-9]{6}"
               value={newAddress.pincode}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, pincode: e.target.value })
@@ -247,7 +232,6 @@ export default function StepOneForm() {
               errorMsg={serverErrors?.pincode}
             />
 
-            {/* City */}
             <Input
               label="City"
               id="city"
@@ -263,7 +247,6 @@ export default function StepOneForm() {
         )}
 
         {/* Checkbox to Save New Address */}
-
         <div className="flex items-center gap-2">
           <input
             type="checkbox"

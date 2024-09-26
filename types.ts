@@ -11,28 +11,38 @@ export interface StepOneErrors {
 }
 
 export interface StepTwoErrors {
-  company: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  locality?: string;
-  pincode?: string;
-  city?: string;
+  shiptocompany: string;
+  shiptofirstName?: string;
+  shiptolastName?: string;
+  shiptoemail?: string;
+  shiptophoneNumber?: string;
+  shiptoaddressLine1?: string;
+  shiptoaddressLine2?: string;
+  shiptolocality?: string;
+  shiptopincode?: string;
+  shiptocity?: string;
 }
 
 export interface StepThreeErrors {
-  descriptionOfGoods?: string;
-  valueOfGoods?: number;
-  weight?: number;
-  description?: string;
-  instructions?: string;
+  packages?: Array<{
+    weight?: number;
+    valueofgoods?: number;
+    description?: string;
+    instructions?: string;
+  }>;
 }
 
 export interface FormErrors {
-  [key: string]: string | number | undefined; // Add this line
+  [key: string]:
+    | string
+    | number
+    | undefined
+    | Array<{
+        weight?: number;
+        valueofgoods?: number;
+        description?: string;
+        instructions?: string;
+      }>; // Add this line
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -42,18 +52,22 @@ export interface FormErrors {
   locality?: string;
   pincode?: string;
   city?: string;
-  company?: string;
-  descriptionOfGoods?: string;
-  valueOfGoods?: number;
-  weight?: number;
-  instructions?: string;
-}
-
-export enum AddRoutes {
-  SHIPFROM_INFO = "/add/step-one",
-  SHIPTO_INFO = "/add/step-two",
-  SHIPMENTPACKAGE_INFO = "/add/step-three",
-  REVIEW_INFO = "/add/review",
+  shiptocompany?: string;
+  shiptofirstName?: string;
+  shiptolastName?: string;
+  shiptoemail?: string;
+  shiptophoneNumber?: string;
+  shiptoaddressLine1?: string;
+  shiptoaddressLine2?: string;
+  shiptolocality?: string;
+  shiptopincode?: string;
+  shiptocity?: string;
+  packages?: Array<{
+    weight?: number;
+    valueofgoods?: number;
+    description?: string;
+    instructions?: string;
+  }>;
 }
 
 export interface NewDealInitialValuesType {
@@ -66,9 +80,30 @@ export interface NewDealInitialValuesType {
   locality?: string;
   pincode?: string;
   city?: string;
-  company?: string;
+  shiptocompany?: string;
+  shiptofirstName?: string;
+  shiptolastName?: string;
+  shiptoemail?: string;
+  shiptophoneNumber?: string;
+  shiptoaddressLine1?: string;
+  shiptoaddressLine2?: string;
+  shiptolocality?: string;
+  shiptopincode?: string;
+  shiptocity?: string;
   descriptionOfGoods?: string;
-  valueOfGoods?: number;
-  weight?: number;
-  instructions?: string;
+  // Instead of defining weight, description, and instructions separately,
+  // create an array to store multiple packages
+  packages?: Array<{
+    weight?: number;
+    valueofgoods?: number;
+    description?: string;
+    instructions?: string;
+  }>;
+}
+
+export enum AddRoutes {
+  SHIPFROM_INFO = "/add/step-one",
+  SHIPTO_INFO = "/add/step-two",
+  SHIPMENTPACKAGE_INFO = "/add/step-three",
+  REVIEW_INFO = "/add/review",
 }

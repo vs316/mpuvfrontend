@@ -12,6 +12,7 @@ import {
   NewDealType,
   newDealInitialValuesSchema,
 } from "@/schemas";
+
 const defaultDeal: NewDealInitialValuesType = {
   firstName: "",
   lastName: "",
@@ -22,20 +23,34 @@ const defaultDeal: NewDealInitialValuesType = {
   locality: "",
   pincode: "",
   city: "",
-  company: "",
+  shiptocompany: "",
+  shiptofirstName: "",
+  shiptolastName: "",
+  shiptoemail: "",
+  shiptophoneNumber: "",
+  shiptoaddressLine1: "",
+  shiptoaddressLine2: "",
+  shiptolocality: "",
+  shiptopincode: "",
+  shiptocity: "",
   descriptionOfGoods: "",
-  valueOfGoods: 0,
-  weight: 0,
-  instructions: "",
+  packages: [
+    {
+      weight: 0, // You can set default value to 0
+      valueofgoods: 0,
+      description: "", // Default empty string
+      instructions: "", // Default empty string
+    },
+  ],
 };
 
+// Local Storage keys
 const LOCAL_STORAGE_KEY = "multi-page-form-demo-newDealData";
-
 type AddDealContextType = {
   newDealData: NewDealInitialValuesType;
-  updateNewDealDetails: (dealDetails: Partial<NewDealType>) => void;
-  dataLoaded: boolean;
-  resetLocalStorage: () => void;
+  dataLoaded: boolean; // Include this if it's not already included
+  updateNewDealDetails: (dealDetails: Partial<NewDealType>) => void; // Add this line
+  resetLocalStorage: () => void; // Ensure this exists as well
 };
 
 export const AddDealContext = createContext<AddDealContextType | null>(null);
@@ -60,19 +75,26 @@ export const AddDealContextProvider = ({
     }
   }, [newDealData, dataLoaded]);
 
+  // Update deal details
   const updateNewDealDetails = useCallback(
     (dealDetails: Partial<NewDealType>) => {
-      setNewDealData({ ...newDealData, ...dealDetails });
+      setNewDealData((prevDealData) => ({
+        ...prevDealData,
+        ...dealDetails,
+        packages: dealDetails.packages || prevDealData.packages,
+      }));
     },
-    [newDealData]
+    []
   );
 
+  // Save New Deal data to localStorage
   const saveDataToLocalStorage = (
     currentDealData: NewDealInitialValuesType
   ) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(currentDealData));
   };
 
+  // Read New Deal data from localStorage
   const readFromLocalStorage = () => {
     const loadedDataString = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!loadedDataString) return setNewDealData(defaultDeal);
@@ -87,6 +109,7 @@ export const AddDealContextProvider = ({
     }
   };
 
+  // Reset both storage items
   const resetLocalStorage = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     setNewDealData(defaultDeal);

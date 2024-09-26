@@ -1,131 +1,138 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "@/components/Input";
 import SubmitButton from "../../../components/SubmitButton";
 import { stepThreeFormAction } from "./actions";
 import { FormErrors } from "@/types";
 import { useFormState } from "react-dom";
-import { NewDealInitialValuesType } from "@/types"; // Add this import
-//import Select from "@/components/Select"; // Assuming Select component for dropdown
-
-const initialState: FormErrors = {};
+import { NewDealInitialValuesType } from "@/schemas"; // Add this import
+import { useAddDealContext } from "@/contexts/addDealContext";
+import { useRouter } from "next/navigation";
+import { AddRoutes } from "@/types";
+const initialState: { errors?: FormErrors; success: boolean } = {
+  success: false,
+};
 
 export default function StepThreeForm() {
-  const [serverErrors, formAction] = useFormState(
-    stepThreeFormAction,
-    initialState
-  );
-
+  const router = useRouter();
+  const [state, formAction] = useFormState(stepThreeFormAction, initialState);
+  const { newDealData, updateNewDealDetails } = useAddDealContext();
   // State for managing packages
-  const [packages, setPackages] = useState([
-    { weight: "", description: "", instructions: "" },
-  ]);
+  const [packages, setPackages] = useState(
+    newDealData.packages?.map((pkg) => ({
+      weight: String(pkg.weight || ""),
+      valueofgoods: String(pkg.valueofgoods || ""),
+      description: pkg.description || "",
+      instructions: pkg.instructions || "",
+    })) || [{ weight: "", valueofgoods: "", description: "", instructions: "" }]
+  );
+  useEffect(() => {
+    // Update context when packages change
+    updateNewDealDetails({ packages });
+  }, [packages, updateNewDealDetails]);
 
+  useEffect(() => {
+    if (state.success) {
+      router.push(AddRoutes.REVIEW_INFO);
+    }
+  }, [state.success, router]);
   // Function to add a new package
   const addPackage = () => {
     setPackages([
       ...packages,
-      { weight: "", description: "", instructions: "" },
+      { weight: "", valueofgoods: "", description: "", instructions: "" },
     ]);
   };
 
   // Function to update a package's details
   const updatePackage = (
     index: number,
-    field: "weight" | "description" | "instructions",
-    value: string
+    field: keyof NewDealInitialValuesType["packages"][number],
+    value: string | number
   ) => {
-    const newPackages = [...packages];
-    newPackages[index][field] = value;
-    setPackages(newPackages);
+    const updatedPackages = packages.map((pkg, i) =>
+      i === index ? { ...pkg, [field]: String(value) } : pkg
+    );
+    //updatedPackages[index][field] = value;
+    setPackages(updatedPackages);
   };
+  // Store the updated package array in localStorage dynamically
+  //   const allData = JSON.parse(
+  //     localStorage.getItem("multi-page-form-demo-newDealData") || "{}"
+  //   );
+  //   localStorage.setItem(
+  //     "multi-page-form-demo-newDealData",
+  //     JSON.stringify({
+  //       ...allData,
+  //       packages: updatedPackages, // Store the array of packages
+  //     })
+  //   );
+  // };
+
+  // Handle form submit
+  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  // };
 
   return (
     <form action={formAction} className="flex flex-1 flex-col items-center">
       <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
-        {/* Package Type */}
-        {/* <Select
-          label="Package Type"
-          id="packageType"
-          required
-          options={[
-            { value: "Package", label: "Package" },
-            { value: "Document", label: "Document" },
-          ]}
-          errorMsg={serverErrors?.packageType}
-        /> */}
-
-        {/* Invoice Number */}
-        {/* <Input
-          label="Invoice Number"
-          id="invoiceNumber"
-          type="text"
-          required
-          errorMsg={serverErrors?.invoiceNumber}
-        /> */}
-
-        {/* Reference Number 1 */}
-        {/* <Input
-          label="Reference Number 1"
-          id="referenceNumber1"
-          type="text"
-          required
-          errorMsg={serverErrors?.referenceNumber1}
-        /> */}
-
-        {/* Reference Number 2 */}
-        {/* <Input
-          label="Reference Number 2"
-          id="referenceNumber2"
-          type="text"
-          errorMsg={serverErrors?.referenceNumber2}
-        /> */}
-
         {/* General Description of Goods */}
         <Input
           label="General Description of Goods"
           id="descriptionOfGoods"
           type="text"
           required
-          errorMsg={serverErrors?.descriptionOfGoods}
-        />
-
-        {/* Value of Goods */}
-        <Input
-          label="Value of Goods"
-          id="valueOfGoods"
-          type="number"
+          value={newDealData.descriptionOfGoods || ""}
+          onChange={(e) =>
+            updateNewDealDetails({ descriptionOfGoods: e.target.value })
+          }
           errorMsg={
-            serverErrors?.valueOfGoods !== undefined
-              ? String(serverErrors.valueOfGoods)
+            state.errors?.descriptionOfGoods
+              ? String(state.errors.descriptionOfGoods)
               : undefined
           }
         />
 
         {/* Render each package */}
-        {packages.map((pkg, index) => (
+        {packages?.map((pkg, index) => (
           <div key={index} className="border p-4 rounded-md bg-popover">
             <h3 className="font-bold">Package {index + 1}</h3>
 
             {/* Weight */}
             <Input
               label="Weight (in Kgs)"
-              id={`weight-${index}` as keyof NewDealInitialValuesType} // Update this line
+              id={`weight-${index}` as keyof NewDealInitialValuesType}
               type="number"
               value={pkg.weight}
               onChange={(e) => updatePackage(index, "weight", e.target.value)}
               required
               errorMsg={
-                serverErrors?.[`weight-${index}`] !== undefined
-                  ? String(serverErrors[`weight-${index}`])
+                state.errors?.[`weight-${index}`]
+                  ? String(state.errors[`weight-${index}`])
                   : undefined
               }
             />
 
+            <Input
+              label="Value"
+              id={`valueofgoods-${index}` as keyof NewDealInitialValuesType}
+              type="number"
+              value={pkg.valueofgoods}
+              onChange={(e) =>
+                updatePackage(index, "valueofgoods", e.target.value)
+              }
+              required
+              errorMsg={
+                state.errors?.[`valueofgoods-${index}`]
+                  ? String(state.errors[`valueofgoods-${index}`])
+                  : undefined
+              }
+            />
             {/* Package Description */}
             <Input
               label="Package Description"
-              id={`description-${index}` as keyof NewDealInitialValuesType} // Update this line
+              id={`description-${index}` as keyof NewDealInitialValuesType}
               type="text"
               value={pkg.description}
               onChange={(e) =>
@@ -133,24 +140,23 @@ export default function StepThreeForm() {
               }
               required
               errorMsg={
-                serverErrors?.[`description-${index}`] !== undefined
-                  ? String(serverErrors[`description-${index}`])
+                state.errors?.[`description-${index}`]
+                  ? String(state.errors[`description-${index}`])
                   : undefined
               }
             />
-
             {/* Package Instructions */}
             <Input
               label="Package Instructions"
-              id={`instructions-${index}` as keyof NewDealInitialValuesType} // Update this line
+              id={`instructions-${index}` as keyof NewDealInitialValuesType}
               type="text"
               value={pkg.instructions}
               onChange={(e) =>
                 updatePackage(index, "instructions", e.target.value)
               }
               errorMsg={
-                serverErrors?.[`instructions-${index}`] !== undefined
-                  ? String(serverErrors[`instructions-${index}`])
+                state.errors?.[`instructions-${index}`]
+                  ? String(state.errors[`instructions-${index}`])
                   : undefined
               }
             />

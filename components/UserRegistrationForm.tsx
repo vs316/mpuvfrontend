@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Progress } from "./ui/progress";
 import { PasswordStrengthVisualizer } from "./ui/passwordstrengthvisualizer";
 import { useUser } from "@/contexts/userContext";
+import { getOrCreateUserId } from "@/app/utils/UserUtils";
 //import { useRouter } from "next/router";
 interface Address {
   address_id?: number;
@@ -16,7 +17,7 @@ interface Address {
   city: string;
   state: string;
   pincode: string;
-  userId?: number;
+  uuid?: string;
 }
 
 interface UserRegistration {
@@ -31,12 +32,13 @@ interface UserRegistration {
 }
 
 function SignupForm() {
+  const userId = getOrCreateUserId();
+  console.log(userId);
   const { toast } = useToast();
   const userContext = useUser();
   if (!userContext) {
     throw new Error("User context is not available");
   }
-  const { setUserId } = userContext;
   const [formData, setFormData] = useState<UserRegistration>({
     first_name: "",
     last_name: "",
@@ -137,6 +139,7 @@ function SignupForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          uuid: userId,
           first_name: formData.first_name,
           last_name: formData.last_name,
           email: formData.email,
@@ -153,50 +156,47 @@ function SignupForm() {
           description: "Signup successful!",
           variant: "default",
         });
-        // const data = JSON.parse(responseText); // Parse the JSON response
-        // console.log("Response data:", data);
+      }
+      // const data = JSON.parse(responseText); // Parse the JSON response
+      // console.log("Response data:", data);
 
-        // // Fetch the new user ID
-        // const userIdResponse = await fetch(
-        //   `http://localhost:3000/user/${data.user_id}`
-        // );
-        // if (userIdResponse.ok) {
-        //   const userIdData = await userIdResponse.json();
-        //   const userId = userIdData.user_id; // Store the user ID for future reference
-        //   console.log("New User ID:", userId);
-        // }
-        const data = await response.json();
-        const userId = data.user_id; // Assuming this is how you get the user ID
-        console.log(userId);
-        setUserId(userId);
+      // // Fetch the new user ID
+      // const userIdResponse = await fetch(
+      //   `http://localhost:3000/user/${data.user_id}`
+      // );
+      // if (userIdResponse.ok) {
+      //   const userIdData = await userIdResponse.json();
+      //   const userId = userIdData.user_id; // Store the user ID for future reference
+      //   console.log("New User ID:", userId);
+      // }
 
-        const addressIdResponse = await fetch(
-          `http://localhost:3000/address?userId=${userId}`
-        );
-        if (addressIdResponse.ok) {
-          const addressIdData: {
-            status: string;
-            message: string;
-            result: Address[];
-          } = await addressIdResponse.json();
-          const filteredAddresses = addressIdData.result.filter(
-            (address) => address.userId === userId
-          );
-          // const addressId = filteredAddresses.address_id;
-          // console.log("New address ID:", addressId);
-          if (filteredAddresses.length > 0) {
-            const addressId = filteredAddresses[0].address_id; // Get the address_id of the first matching address
-            console.log("New address ID:", addressId);
-          } else {
-            console.log("No addresses found for this user ID.");
-          }
-        } else {
-          console.error(
-            "Failed to fetch addresses:",
-            addressIdResponse.statusText
-          );
-        }
-      } else {
+      // const addressIdResponse = await fetch(
+      //   `http://localhost:3000/address?uuid=${userId}`
+      // );
+      // if (addressIdResponse.ok) {
+      //   const addressIdData: {
+      //     status: string;
+      //     message: string;
+      //     result: Address[];
+      //   } = await addressIdResponse.json();
+      //   const filteredAddresses = addressIdData.result.filter(
+      //     (address) => address.uuid ===userId
+      //   );
+      //   const addressId = filteredAddresses.address_id;
+      //   console.log("New address ID:", addressId);
+      //   if (filteredAddresses.length > 0) {
+      //     const addressId = filteredAddresses[0].address_id; // Get the address_id of the first matching address
+      //     console.log("New address ID:", addressId);
+      //   } else {
+      //     console.log("No addresses found for this user ID.");
+      //   }
+      // } else {
+      //   console.error(
+      //     "Failed to fetch addresses:",
+      //     addressIdResponse.statusText
+      //   );
+      //     }}
+      else {
         const errorData = await response.json();
         console.error("Signup error:", errorData); // Log the raw error response // Attempt to parse the error response
         toast({
@@ -213,10 +213,11 @@ function SignupForm() {
         variant: "destructive",
       });
     }
-    // finally {
-    //   setLoading(false);
-    // }
   };
+  //   finally {
+  //     setLoading(false);
+  //   }
+  // };
   const calculateCompletionPercentage = () => {
     const totalFields = 6 + formData.addresses.length * 5; // 6 fields + 5 fields per address
     let filledFields = 0;

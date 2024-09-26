@@ -4,138 +4,188 @@ import SubmitButton from "@/components/SubmitButton";
 import { stepTwoFormAction } from "./actions";
 import { useFormState } from "react-dom";
 import { FormErrors } from "@/types";
-//import Select from '@/components/Select'; // Assuming a Select component is available
+import { useState } from "react";
 
 const initialState: FormErrors = {};
-
 export default function StepTwoForm() {
   const [serverErrors, formAction] = useFormState(
     stepTwoFormAction,
     initialState
   );
 
-  return (
-    <form action={formAction} className="flex flex-1 flex-col items-center">
-      <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
-        {/* Address Type Selection (New Address, Saved Address) */}
-        {/* <Select
-          label="Address"
-          id="address"
-          required
-          options={[
-            { value: 'new', label: 'New Address' },
-            { value: 'saved', label: 'Saved Address' },
-          ]}
-          errorMsg={serverErrors?.address}
-        /> */}
+  const [formData, setFormData] = useState({
+    shiptocompany: "",
+    shiptofirstName: "",
+    shiptolastName: "",
+    shiptoemail: "",
+    shiptophoneNumber: "",
+    shiptoaddressLine1: "",
+    shiptoaddressLine2: "",
+    shiptolocality: "",
+    shiptopincode: "",
+    shiptocity: "",
+    updateAddress: false,
+  });
 
+  // Handle input change with explicit type
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [id]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  // Handle form submit with explicit type
+  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   console.log("Form submitted:", formData);
+  //   //alert("Form data saved locally. Proceed to the next step.");
+  // };
+
+  return (
+    <form
+      action={formAction}
+      className="flex flex-1 flex-col items-center"
+      // onSubmit={handleSubmit}
+    >
+      <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
         {/* Company */}
         <Input
           label="Company"
-          id="company"
+          id="shiptocompany"
           type="text"
           required
-          errorMsg={serverErrors?.company}
+          value={formData.shiptocompany}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptocompany}
         />
 
         {/* First Name */}
         <Input
           label="First Name"
-          id="firstName"
+          id="shiptofirstName"
           type="text"
           required
-          errorMsg={serverErrors?.firstName}
+          value={formData.shiptofirstName}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptofirstName}
         />
 
         {/* Last Name */}
         <Input
           label="Last Name"
-          id="lastName"
+          id="shiptolastName"
           type="text"
           required
-          errorMsg={serverErrors?.lastName}
+          value={formData.shiptolastName}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptolastName}
         />
 
         {/* Email Address */}
         <Input
           label="Email Address"
-          id="email"
+          id="shiptoemail"
           type="email"
           required
-          errorMsg={serverErrors?.email}
+          value={formData.shiptoemail}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptoemail}
         />
 
         {/* Phone Number */}
         <Input
           label="Phone Number"
-          id="phoneNumber"
+          id="shiptophoneNumber"
           type="tel"
           required
           pattern="[0-9]{10}" // Assuming 10-digit phone number
-          errorMsg={serverErrors?.phoneNumber}
+          value={formData.shiptophoneNumber}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptophoneNumber}
         />
 
         {/* Address Line 1 */}
         <Input
           label="Address Line 1"
-          id="addressLine1"
+          id="shiptoaddressLine1"
           type="text"
           required
-          errorMsg={serverErrors?.addressLine1}
+          value={formData.shiptoaddressLine1}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptoaddressLine1}
         />
 
         {/* Address Line 2 */}
         <Input
           label="Address Line 2"
-          id="addressLine2"
+          id="shiptoaddressLine2"
           type="text"
           required
-          errorMsg={serverErrors?.addressLine2}
+          value={formData.shiptoaddressLine2}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptoaddressLine2}
         />
 
         {/* Locality */}
         <Input
           label="Locality"
-          id="locality"
+          id="shiptolocality"
           type="text"
           required
-          errorMsg={serverErrors?.locality}
+          value={formData.shiptolocality}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptolocality}
         />
 
         {/* Pincode */}
         <Input
           label="Pincode"
-          id="pincode"
+          id="shiptopincode"
           type="text"
           required
           pattern="[0-9]{6}" // Assuming 6-digit pincode
-          errorMsg={serverErrors?.pincode}
+          value={formData.shiptopincode}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptopincode}
         />
 
         {/* City */}
         <Input
           label="City"
-          id="city"
+          id="shiptocity"
           type="text"
           required
-          errorMsg={serverErrors?.city}
+          value={formData.shiptocity}
+          onChange={handleChange}
+          errorMsg={serverErrors?.shiptocity}
         />
 
         {/* State */}
-        {/* <Select
+        {/* Assuming a text input for the state; replace with a Select if needed */}
+        {/* <Input
           label="State"
           id="state"
+          type="select"
           required
+          value={formData.state}
           options={[
             { value: 'Uttar Pradesh', label: 'Uttar Pradesh' },
             // Add other states as options
           ]}
+          onChange={handleChange}
           errorMsg={serverErrors?.state}
         /> */}
 
         {/* Checkbox for updating the address book */}
         <div className="flex items-center gap-2">
-          <input type="checkbox" id="updateAddress" />
+          <input
+            type="checkbox"
+            id="updateAddress"
+            checked={formData.updateAddress}
+            onChange={handleChange}
+          />
           <label htmlFor="updateAddress">Update address to address book</label>
         </div>
 
