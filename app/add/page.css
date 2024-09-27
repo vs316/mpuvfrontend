@@ -58,7 +58,6 @@ body {
     --ring: 346.8 77.2% 49.8%;
     --radius: 0.5rem;
   }
-
   * {
     @apply border-border;
   }

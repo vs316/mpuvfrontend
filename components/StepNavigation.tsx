@@ -43,8 +43,11 @@ export default function StepNavigation() {
         href={steps[currentStep - 1]?.link || steps[0].link}
         className="mb-2 flex items-center gap-1 text-base disabled:text-white/50 lg:mb-8 lg:gap-3"
       >
-        <Icon id="back-arrow" size={24} className="text-white" />{" "}
-        {/* Example usage */}
+        <Icon
+          id="circle-left"
+          size={24}
+          className="text-white overflow-visible"
+        />{" "}
         Back
       </Link>
 

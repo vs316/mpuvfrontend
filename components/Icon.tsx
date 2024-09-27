@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 interface IconProps {
   id: string;
@@ -9,7 +9,7 @@ interface IconProps {
 export default function Icon({ id, size, className }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} className={className}>
-      <use href={`/icons/sprite.svg#${id}`} />
+      <use xlinkHref={`/mpuvfrontend/public/icons/sprites/regular.svg#${id}`} />
     </svg>
   );
 }

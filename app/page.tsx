@@ -14,6 +14,8 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto space-y-8">
           <section className="text-center space-y-4">
+            <br />
+            <br />
             <h2 className="text-3xl font-bold">Welcome to CEP Tracker</h2>
             <p className="text-muted-foreground">
               Track your shipments and manage your deliveries with ease.
@@ -27,7 +29,7 @@ export default function Home() {
                 className="w-full"
                 onClick={() => setIsRegistrationOpen(true)}
               >
-                <UserPlus className="mr-2 h-4 w-4" /> Register
+                <UserPlus className="h-4 w-4" /> Register
               </Button>
             </div>
             <div className="bg-card text-card-foreground p-6 rounded-lg shadow-md space-y-4">

@@ -1,0 +1,76 @@
+:root {
+  --x: 45deg;
+}
+
+.row__button {
+  position: relative;
+  width: 200px; /* Adjusted width */
+  height: 60px; /* Adjusted height */
+  display: inline-block;
+  justify-content: space-between;
+  align-items: center;
+  text-transform: uppercase;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.row__button i {
+  position: absolute;
+  inset: -2px;
+  display: block;
+  background: #f00;
+  border-radius: 5px;
+  z-index: 0;
+}
+
+.row__button i,
+.row__button i:nth-child(2) {
+  background: linear-gradient(
+    var(--x),
+    #00ccff,
+    #0e1538,
+    red,
+    darkred,
+    rgb(255, 102, 0)
+  );
+  z-index: 0;
+}
+
+.row__button i:nth-child(2) {
+  filter: blur(8px); /* Slightly reduced blur */
+  z-index: 0;
+}
+
+.row__button__span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 3px; /* Reduced letter spacing */
+  font-size: 0.9rem; /* Reduced font size */
+  border: 1px solid red;
+  border-radius: 3px;
+  background: rgba(139, 0, 0, 0.65);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.row__button__span::before {
+  content: "";
+  position: absolute;
+  color: white;
+  top: 0;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.075);
+  transform: skewX(25deg);
+  z-index: 1;
+}

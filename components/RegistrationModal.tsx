@@ -14,6 +14,7 @@ export function RegistrationModal({ isOpen, onClose }: RegistrationModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
+        <br />
         <DialogHeader>
           <DialogTitle>User Registration</DialogTitle>
         </DialogHeader>

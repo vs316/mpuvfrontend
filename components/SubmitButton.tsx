@@ -1,22 +1,50 @@
 "use client";
-import { useFormStatus } from "react-dom";
 
+import React from "react";
+import { useFormStatus } from "react-dom";
+import { motion } from "framer-motion";
 interface SubmitButtonProps {
   text: string;
-  submittingText: string;
+  submittingText?: string;
   disabled?: boolean;
 }
-export default function SubmitButton({ text }: SubmitButtonProps) {
+
+const SubmitButton: React.FC<SubmitButtonProps> = ({
+  text,
+  disabled = false,
+}) => {
   const { pending } = useFormStatus();
+
   return (
-    <button
-      className="mt-2 rounded-lg bg-teal-500 py-4 text-lg text-black disabled:bg-teal-600/30 lg:py-7 lg:text-1xl"
+    <motion.button
       type="submit"
+      disabled={disabled || pending}
+      initial={{ "--x": "100%", scale: 1 }}
+      animate={{ "--x": "-100%" }}
+      whileTap={{ scale: 0.97 }}
+      transition={{
+        repeat: Infinity,
+        repeatType: "loop",
+        repeatDelay: 1,
+        type: "spring",
+        stiffness: 20,
+        damping: 15,
+        mass: 2,
+      }}
+      className="relative w-full px-6 py-4 mt-2 text-lg font-light tracking-wide text-neutral-100 rounded-md radial-gradient lg:py-7 lg:text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+      style={
+        {
+          "--x": "100%",
+        } as React.CSSProperties
+      }
     >
-      {pending ? <Loader /> : text}
-    </button>
+      <span className="relative block w-full h-full linear-mask">
+        {pending ? <Loader /> : text}
+      </span>
+      <span className="absolute inset-0 block p-px rounded-md linear-overlay" />
+    </motion.button>
   );
-}
+};
 
 function Loader() {
   return (
@@ -41,3 +69,5 @@ function Loader() {
     </div>
   );
 }
+
+export default SubmitButton;

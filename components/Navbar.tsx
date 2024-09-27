@@ -1,28 +1,68 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Home } from "lucide-react"; // Ensure you have lucide-react installed
+import { Home } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import "./Navbar.css";
 
 export default function Navbar() {
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const navigateHome = () => {
     router.push("http://localhost:3001");
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="flex items-center justify-between p-4 bg-primary text-white">
-      <div className="flex items-center cursor-pointer" onClick={navigateHome}>
-        <Home className="h-6 w-6" />
-        <span className="ml-2">Home</span>
+    <nav className={`nav ${isScrolled ? "affix" : ""}`}>
+      <div className="container mx-auto px-4 flex items-center justify-between">
+        <div className="logo">
+          <a href="#" onClick={navigateHome} className="flex items-center">
+            <Home className="h-6 w-6 mr-2" />
+            <span className="">CEP Tracker</span>
+          </a>
+        </div>
+        <div
+          id="mainListDiv"
+          className={`main_list ${isMenuOpen ? "show_list" : ""}`}
+        >
+          <ul className="navlinks">
+            <li>
+              <a href="#">View Orders</a>
+            </li>
+            <li>
+              <a href="#">Contact</a>
+            </li>
+            <li>
+              <ThemeToggle />
+            </li>
+          </ul>
+        </div>
+        <span
+          className={`navTrigger ${isMenuOpen ? "active" : ""}`}
+          onClick={toggleMenu}
+        >
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </span>
       </div>
-      <header className="flex-1 text-center">
-        {" "}
-        {/* Centering the header */}
-        <h1 className="text-2xl font-bold">CEP Tracker</h1>
-      </header>
-      <ThemeToggle />
     </nav>
   );
 }
