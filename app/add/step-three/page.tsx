@@ -1,7 +1,7 @@
-import React from 'react';
-import StepThreeForm from './StepThreeForm';
+import React from "react";
+import StepThreeForm from "./StepThreeForm";
 
-export default function StepTwo() {
+export default function StepThree() {
   return (
     <div>
       <StepThreeForm />

@@ -1,7 +1,7 @@
-import React from 'react';
-import ReviewForm from './ReviewForm';
+import React from "react";
+import ReviewForm from "./ReviewForm";
 
-export default function StepTwo() {
+export default function Review() {
   return (
     <div>
       <ReviewForm />

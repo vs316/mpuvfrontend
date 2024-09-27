@@ -6,13 +6,30 @@ import toast from "react-hot-toast";
 import { useAddDealContext } from "@/contexts/addDealContext"; // Import the context
 import { NewDealType } from "@/schemas";
 import { submitDealAction } from "./actions";
+//import { useRouter } from "next/router";
+import calculateShipmentPrice from "@/lib/calculatePricealgo";
+type ShipmentDetails = {
+  serviceType: "standard" | "express";
+  weight: number; // in kg
+  quantity: number; // number of packages
+  valueOfGoods: number; // value of goods in INR
+  distance: "local" | "domestic" | "international"; // distance zone
+};
 
 export default function CreateShipmentForm() {
   const { newDealData, resetLocalStorage, updateNewDealDetails } =
     useAddDealContext(); // Get the newDealData from context
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [agreeToPolicy, setAgreeToPolicy] = useState(false);
+  //const router = useRouter();
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
+  // Use useEffect to scroll to the top when the form loads
+  useEffect(() => {
+    handleScrollToTop();
+  }, []);
   useEffect(() => {
     const storedData = JSON.parse(
       localStorage.getItem("multi-page-form-demo-newDealData") || "{}"
@@ -96,6 +113,23 @@ export default function CreateShipmentForm() {
       servicetype: storedService,
     };
 
+    // Retrieve the relevant data for price calculation
+    const shipmentDetails: ShipmentDetails = {
+      serviceType: selectedService as "standard" | "express",
+      // Use String() to ensure a string value for parseFloat
+      weight: parseFloat(String(newDealData.packages[0]?.weight || 0)),
+      quantity: newDealData.packages.length,
+      valueOfGoods: parseFloat(
+        String(newDealData.packages[0]?.valueofgoods || 0)
+      ),
+      distance: "domestic", // For now, use a static value or calculate based on addresses
+    };
+
+    const shipmentPrice = calculateShipmentPrice(shipmentDetails);
+
+    console.log(`Calculated Shipment Price: Rs${shipmentPrice}`);
+    localStorage.setItem("shipmentPrice", String(shipmentPrice));
+    window.location.href = "http://localhost:3001/payment";
     // Step 3: Send the API requests asynchronously
     try {
       const [shipFromResponse, shipToResponse, shipmentItemResponse] =
@@ -127,8 +161,8 @@ export default function CreateShipmentForm() {
       if (shipFromResponse.ok && shipToResponse.ok && shipmentItemResponse.ok) {
         console.log("All API requests succeeded");
 
-        // Step 4: Proceed to the payment gateway
-        window.location.href = "/"; // Redirect to payment gateway page
+        // Step 4: Redirect to payment gateway page
+        // router.push("/payment"); // Use the router to navigate to the payment page
       } else {
         console.error("Error occurred in one or more API requests");
       }

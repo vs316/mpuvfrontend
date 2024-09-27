@@ -4,7 +4,7 @@ import SubmitButton from "@/components/SubmitButton";
 import { stepTwoFormAction } from "./actions";
 import { useFormState } from "react-dom";
 import { FormErrors } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const initialState: FormErrors = {};
 export default function StepTwoForm() {
@@ -35,20 +35,23 @@ export default function StepTwoForm() {
       [id]: type === "checkbox" ? checked : value,
     });
   };
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Use useEffect to scroll to the top when the form loads
+  useEffect(() => {
+    handleScrollToTop();
+  }, []); // Empty dependency array ensures this runs only once when the component mounts
 
   // Handle form submit with explicit type
   // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
   //   console.log("Form submitted:", formData);
-  //   //alert("Form data saved locally. Proceed to the next step.");
   // };
 
   return (
-    <form
-      action={formAction}
-      className="flex flex-1 flex-col items-center"
-      // onSubmit={handleSubmit}
-    >
+    <form action={formAction} className="flex flex-1 flex-col items-center">
       <div className="flex w-full flex-col gap-8 lg:max-w-[700px]">
         {/* Company */}
         <Input

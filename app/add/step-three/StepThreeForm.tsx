@@ -26,6 +26,14 @@ export default function StepThreeForm() {
       instructions: pkg.instructions || "",
     })) || [{ weight: "", valueofgoods: "", description: "", instructions: "" }]
   );
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Use useEffect to scroll to the top when the form loads
+  useEffect(() => {
+    handleScrollToTop();
+  }, []);
   useEffect(() => {
     // Update context when packages change
     updateNewDealDetails({ packages });
