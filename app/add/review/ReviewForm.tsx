@@ -105,13 +105,19 @@ export default function CreateShipmentForm() {
     };
 
     // Shipment Item (Package) data
-    const shipmentItemData = {
-      item_description: localData.packages[0]?.description || null,
-      weight: parseFloat(localData.packages[0]?.weight) || null,
-      value: parseFloat(localData.packages[0]?.valueofgoods) || null,
-      descriptionOfGoods: localData.descriptionOfGoods || null,
-      servicetype: storedService,
-    };
+    const shipmentItemData = localData.packages.map(
+      (packageItem: {
+        description: string;
+        weight: string;
+        valueofgoods: string;
+      }) => ({
+        item_description: packageItem.description || null,
+        weight: parseFloat(packageItem.weight) || null,
+        value: parseFloat(packageItem.valueofgoods) || null,
+        descriptionOfGoods: localData.descriptionOfGoods || null,
+        servicetype: storedService,
+      })
+    );
 
     // Retrieve the relevant data for price calculation
     const shipmentDetails: ShipmentDetails = {
@@ -132,33 +138,47 @@ export default function CreateShipmentForm() {
     window.location.href = "http://localhost:3001/payment";
     // Step 3: Send the API requests asynchronously
     try {
-      const [shipFromResponse, shipToResponse, shipmentItemResponse] =
-        await Promise.all([
-          fetch("http://localhost:3000/shipfrom", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(shipFromData),
-          }),
-          fetch("http://localhost:3000/shipto", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(shipToData),
-          }),
-          fetch("http://localhost:3000/shipment-items", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(shipmentItemData),
-          }),
-        ]);
+      const [shipFromResponse, shipToResponse] = await Promise.all([
+        fetch("http://localhost:3000/shipfrom", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(shipFromData),
+        }),
+        fetch("http://localhost:3000/shipto", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(shipToData),
+        }),
+      ]);
+      const shipmentItemResponse = await Promise.all(
+        shipmentItemData.map(
+          (shipmentItem: {
+            item_description: string | null;
+            weight: number | null;
+            value: number | null;
+            descriptionOfGoods: string | null;
+            servicetype: string | null;
+          }) =>
+            fetch("http://localhost:3000/shipment-items", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(shipmentItem),
+            })
+        )
+      );
 
       // Check for successful responses
-      if (shipFromResponse.ok && shipToResponse.ok && shipmentItemResponse.ok) {
+      if (
+        shipFromResponse.ok &&
+        shipToResponse.ok &&
+        shipmentItemResponse.every((response) => response.ok)
+      ) {
         console.log("All API requests succeeded");
 
         // Step 4: Redirect to payment gateway page

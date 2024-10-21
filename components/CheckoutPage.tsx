@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import {
   useStripe,
@@ -8,23 +7,40 @@ import {
 } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
 
-const CheckoutPage = ({ amount }: { amount: number }) => {
+const CheckoutPage: React.FC<{ amount: number }> = ({ amount }) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [errorMessage, setErrorMessage] = useState<string>();
-  const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [clientSecret, setClientSecret] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log("Fetching client secret for amount:", amount);
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
+      body: JSON.stringify({
+        amount: convertToSubcurrency(amount),
+        customerName: "Customer Name", // Replace with actual customer name
+        customerAddress: {
+          line1: "123 Main Street",
+          city: "Your City",
+          postal_code: "123456",
+          country: "IN",
+        },
+      }),
     })
       .then((res) => res.json())
-      .then((data) => setClientSecret(data.clientSecret));
+      .then((data) => {
+        console.log("Received client secret:", data.clientSecret);
+        setClientSecret(data.clientSecret);
+      })
+      .catch((error) => {
+        console.error("Error fetching client secret:", error);
+        setErrorMessage(`Error fetching client secret: ${error.message}`);
+      });
   }, [amount]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -32,34 +48,36 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
     setLoading(true);
 
     if (!stripe || !elements) {
+      console.error("Stripe has not loaded yet.");
+      setErrorMessage("Stripe has not loaded yet.");
+      setLoading(false);
       return;
     }
 
+    console.log("Submitting payment...");
     const { error: submitError } = await elements.submit();
-
     if (submitError) {
+      console.error("Error submitting payment:", submitError);
       setErrorMessage(submitError.message);
       setLoading(false);
       return;
     }
 
+    console.log("Confirming payment...");
     const { error } = await stripe.confirmPayment({
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `http://www.localhost:3001/payment-success?amount=${amount}`,
+        return_url: `${window.location.origin}/payment-success?amount=${amount}`,
       },
     });
 
     if (error) {
-      // This point is only reached if there's an immediate error when
-      // confirming the payment. Show the error to your customer (for example, payment details incomplete)
+      console.error("Error confirming payment:", error);
       setErrorMessage(error.message);
     } else {
-      // The payment UI automatically closes with a success animation.
-      // Your customer is redirected to your `return_url`.
+      console.log("Payment confirmed successfully!");
     }
-
     setLoading(false);
   };
 
@@ -81,14 +99,12 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
   return (
     <form onSubmit={handleSubmit} className="bg-white p-2 rounded-md">
       {clientSecret && <PaymentElement />}
-
       {errorMessage && <div>{errorMessage}</div>}
-
       <button
         disabled={!stripe || loading}
         className="text-white w-full p-5 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
       >
-        {!loading ? `Pay $${amount}` : "Processing..."}
+        {!loading ? `Pay ₹${amount}` : "Processing..."}
       </button>
     </form>
   );

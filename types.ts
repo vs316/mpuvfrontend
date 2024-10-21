@@ -106,4 +106,5 @@ export enum AddRoutes {
   SHIPTO_INFO = "/add/step-two",
   SHIPMENTPACKAGE_INFO = "/add/step-three",
   REVIEW_INFO = "/add/review",
+  PAYMENT_SUCCESS="/payment-success",
 }
