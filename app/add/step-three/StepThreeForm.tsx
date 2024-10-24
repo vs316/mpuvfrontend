@@ -4,7 +4,7 @@ import Input from "@/components/Input";
 import SubmitButton from "../../../components/SubmitButton";
 import { stepThreeFormAction } from "./actions";
 import { FormErrors } from "@/types";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { NewDealInitialValuesType } from "@/schemas"; // Add this import
 import { useAddDealContext } from "@/contexts/addDealContext";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ const initialState: { errors?: FormErrors; success: boolean } = {
 
 export default function StepThreeForm() {
   const router = useRouter();
-  const [state, formAction] = useFormState(stepThreeFormAction, initialState);
+  const [state, formAction] = useActionState(stepThreeFormAction, initialState);
   const { newDealData, updateNewDealDetails } = useAddDealContext();
   // State for managing packages
   const [packages, setPackages] = useState(

@@ -2,13 +2,13 @@
 import Input from "@/components/Input";
 import SubmitButton from "@/components/SubmitButton";
 import { stepTwoFormAction } from "./actions";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { FormErrors } from "@/types";
 import { useState, useEffect } from "react";
 
 const initialState: FormErrors = {};
 export default function StepTwoForm() {
-  const [serverErrors, formAction] = useFormState(
+  const [serverErrors, formAction] = useActionState(
     stepTwoFormAction,
     initialState
   );

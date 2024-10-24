@@ -1,6 +1,6 @@
 "use client";
 import Input from "@/components/Input";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { stepOneFormAction } from "./actions";
 import { FormErrors } from "@/types";
 import SubmitButton from "@/components/SubmitButton";
@@ -21,7 +21,7 @@ interface Address {
 }
 
 export default function StepOneForm() {
-  const [serverErrors, formAction] = useFormState(
+  const [serverErrors, formAction] = useActionState(
     stepOneFormAction,
     initialState
   );

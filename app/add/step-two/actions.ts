@@ -3,10 +3,10 @@ import { stepTwoSchema } from "@/schemas";
 import { AddRoutes, FormErrors } from "@/types";
 import { redirect } from "next/navigation";
 
-export const stepTwoFormAction = (
+export const stepTwoFormAction = async (
   prevState: FormErrors | undefined,
   formData: FormData
-): FormErrors | undefined => {
+): Promise<FormErrors | undefined> => {
   const data = Object.fromEntries(formData.entries());
   const validated = stepTwoSchema.safeParse(data);
   if (!validated.success) {
