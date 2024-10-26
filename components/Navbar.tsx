@@ -34,13 +34,13 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="logo">
           <a href="#" onClick={navigateHome} className="flex items-center">
-            <Image
+            {/* <Image
               src="https://ceptrackerbucket.s3.ap-south-1.amazonaws.com/CEP+Tracker+logo.png"
               alt="Logo Icon-CEP Tracker"
               width={50}
               height={50}
-            />
-            {/* <Home className="h-6 w-6 mr-2" /> */}
+            /> */}
+            <Home className="h-6 w-6 mr-2" />
             <span className="">CEP Tracker</span>
           </a>
         </div>
@@ -50,10 +50,10 @@ export default function Navbar() {
         >
           <ul className="navlinks">
             <li>
-              <a href="#">View Orders</a>
+              <a href="/view-orders">View Orders</a>
             </li>
             <li>
-              <a href="#">Contact</a>
+              <a href="/contact">Contact</a>
             </li>
             <li>
               <ThemeToggle />
