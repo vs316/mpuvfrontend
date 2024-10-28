@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/table";
 import dayjs from "dayjs";
 
-// Define the structure of a shipment object
 interface IShipment {
   shipment_id: number;
   status: string;
@@ -27,11 +26,34 @@ const ShipmentTable: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchShipments = async () => {
+    const fetchUserShipments = async () => {
       try {
-        const response = await fetch("http://localhost:3000/shipments");
-        const data = await response.json();
-        setShipments(data);
+        // Step 1: Retrieve the UUID from localStorage or sessionStorage
+        const uuid = localStorage.getItem("user_id");
+        if (!uuid) {
+          console.error("UUID not found in localStorage or sessionStorage.");
+          setLoading(false);
+          return;
+        }
+
+        // Step 2: Fetch the user_id based on the UUID
+        const userIdResponse = await fetch(
+          `http://localhost:3000/user/id/${uuid}`
+        );
+        if (!userIdResponse.ok) {
+          throw new Error("Failed to fetch user_id");
+        }
+        const { user_id } = await userIdResponse.json();
+
+        // Step 3: Fetch shipments using the obtained user_id
+        const shipmentsResponse = await fetch(
+          `http://localhost:3000/shipments/user/${user_id}`
+        );
+        if (!shipmentsResponse.ok) {
+          throw new Error("Failed to fetch shipments");
+        }
+        const shipmentsData = await shipmentsResponse.json();
+        setShipments(shipmentsData);
       } catch (error) {
         console.error("Error fetching shipments:", error);
       } finally {
@@ -39,7 +61,7 @@ const ShipmentTable: React.FC = () => {
       }
     };
 
-    fetchShipments();
+    fetchUserShipments();
   }, []);
 
   return (
@@ -70,9 +92,7 @@ const ShipmentTable: React.FC = () => {
                 <TableCell className="font-medium">
                   {shipment.shipment_id}
                 </TableCell>
-                <TableCell>
-                  {`${shipment.user.first_name} ${shipment.user.last_name}`}
-                </TableCell>
+                <TableCell>{`${shipment.user.first_name} ${shipment.user.last_name}`}</TableCell>
                 <TableCell>{shipment.status}</TableCell>
                 <TableCell>
                   {dayjs(shipment.created_at).format("YYYY/MM/DD | HH:mm")}

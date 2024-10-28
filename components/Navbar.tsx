@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Home } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import "./Navbar.css";
-import Image from "next/image";
+//import Image from "next/image";
 
 export default function Navbar() {
   const router = useRouter();

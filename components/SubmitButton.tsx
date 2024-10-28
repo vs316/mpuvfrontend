@@ -19,8 +19,8 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
     <motion.button
       type="submit"
       disabled={disabled || pending}
-      initial={{ "--x": "100%", scale: 1 }}
-      animate={{ "--x": "-100%" }}
+      initial={{ scale: 1 }}
+      animate={{ scale: 1 }}
       whileTap={{ scale: 0.97 }}
       transition={{
         repeat: Infinity,
