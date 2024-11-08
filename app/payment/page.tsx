@@ -1,4 +1,5 @@
 "use client";
+import React, { useEffect, useState } from "react";
 import CheckoutPage from "@/components/CheckoutPage";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
 import { Elements } from "@stripe/react-stripe-js";
@@ -11,7 +12,14 @@ if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined) {
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 export default function Home() {
-  const amount = parseFloat(localStorage.getItem("shipmentPrice") || "0");
+  const [amount, setAmount] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedAmount = localStorage.getItem("shipmentPrice");
+      setAmount(parseFloat(storedAmount || "0"));
+    }
+  }, []);
 
   return (
     <main className="max-w-6xl mx-auto p-10 text-gray-800 text-center border m-10 rounded-lg shadow-lg bg-gradient-to-r from-teal-400 to-blue-600 mt-16">

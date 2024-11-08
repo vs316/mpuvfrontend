@@ -16,14 +16,15 @@ function calculateShipmentPrice(details: ShipmentDetails): number {
 
   // Step 2: Define weight-based surcharges in INR
   const weightSurcharge = (weight: number): number => {
-    if (weight <= 1) return 50;
-    if (weight <= 5) return 100;
-    if (weight <= 10) return 200;
-    return 500; // weight above 10kg
+    if (weight <= 1) return 500;
+    if (weight <= 5) return 1000;
+    if (weight <= 10) return 2000;
+    return 5000; // weight above 10kg
   };
 
   // Step 3: Calculate extra costs for additional packages in INR
-  const quantitySurcharge = details.quantity > 1 ? (details.quantity - 1) * 3 : 0;
+  const quantitySurcharge =
+    details.quantity > 1 ? (details.quantity - 1) * 3 : 0;
 
   // Step 4: Calculate handling costs based on the value of goods in INR
   const valueSurcharge = (value: number): number => {

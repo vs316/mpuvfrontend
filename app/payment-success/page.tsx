@@ -1,12 +1,14 @@
 "use client";
+
 import { useEffect } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function PaymentSuccess() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const amount = searchParams.get("amount");
-  const paymentMethod = "Stripe"; // You can dynamically set this if required
-  const paymentStatus = "Success"; // Assuming the payment was successful
+  const paymentMethod = "Stripe";
+  const paymentStatus = "Success";
 
   useEffect(() => {
     // Post payment details to backend
@@ -18,17 +20,14 @@ export default function PaymentSuccess() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            //  shipment_id: shipmentId, // Assumed to come from the query params or session
             amount: parseFloat(amount ?? "0"),
             payment_method: paymentMethod,
             payment_status: paymentStatus,
           }),
         });
-
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
-
         console.log("Payment details successfully posted to backend.");
       } catch (error) {
         console.error("Failed to post payment details:", error);
@@ -50,5 +49,13 @@ export default function PaymentSuccess() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function PaymentSuccess() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
