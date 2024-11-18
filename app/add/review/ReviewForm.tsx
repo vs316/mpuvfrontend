@@ -19,8 +19,7 @@ type ShipmentDetails = {
 };
 
 export default function CreateShipmentForm() {
-  const { newDealData, resetLocalStorage, updateNewDealDetails } =
-    useAddDealContext(); // Get the newDealData from context
+  const { newDealData, updateNewDealDetails } = useAddDealContext(); // Get the newDealData from context
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [agreeToPolicy, setAgreeToPolicy] = useState(false);
   //const router = useRouter();
@@ -190,8 +189,22 @@ export default function CreateShipmentForm() {
         const shipmentResponse = await response.json();
         console.log("Shipment created successfully:", shipmentResponse);
         toast.success("Order submitted successfully");
-        resetLocalStorage();
-        localStorage.removeItem("selectedService");
+        const paymentResponse = await fetch(
+          "http://localhost:3000/payment/latest",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        // resetLocalStorage();
+        // localStorage.removeItem("selectedService");
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          const paymentId = paymentData.payment_id; // Adjust according to your API response structure
+          localStorage.setItem("paymentId", paymentId); // Store payment ID in local storage
+        }
         window.location.href = "http://localhost:3001/payment";
       } else {
         const errorData = await response.json();

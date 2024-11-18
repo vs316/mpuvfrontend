@@ -3,41 +3,51 @@
 import { useEffect } from "react";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const amount = searchParams.get("amount");
   const paymentMethod = "Stripe";
   const paymentStatus = "Success";
+  const paymentId = localStorage.getItem("paymentId");
 
   useEffect(() => {
-    // Post payment details to backend
-    const postPaymentDetails = async () => {
+    // Update payment details in the backend
+    const updatePaymentDetails = async () => {
+      if (!paymentId) {
+        console.error("No payment ID found in local storage.");
+        return;
+      }
       try {
-        const response = await fetch("http://localhost:3000/payment", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: parseFloat(amount ?? "0"),
-            payment_method: paymentMethod,
-            payment_status: paymentStatus,
-          }),
-        });
+        const response = await fetch(
+          `http://localhost:3000/payment/${paymentId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              amount: parseFloat(amount ?? "0"),
+              payment_method: paymentMethod,
+              payment_status: paymentStatus,
+            }),
+          }
+        );
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
-        console.log("Payment details successfully posted to backend.");
+        console.log("Payment details successfully updated in backend.");
       } catch (error) {
-        console.error("Failed to post payment details:", error);
+        console.error("Failed to update payment details:", error);
       }
     };
 
-    if (amount) {
-      postPaymentDetails();
+    if (amount && paymentId) {
+      updatePaymentDetails();
+      // resetLocalStorage();
+      // localStorage.removeItem("selectedService");
+      // localStorage.removeItem("shipmentPrice");
     }
-  }, [amount]);
+  }, [amount, paymentId]);
 
   return (
     <main className="max-w-6xl mx-auto p-10 text-gray-800 text-center border m-10 rounded-lg shadow-lg bg-gradient-to-r from-teal-400 to-blue-600">
